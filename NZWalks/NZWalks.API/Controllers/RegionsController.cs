@@ -43,5 +43,74 @@ namespace NZWalks.API.Controllers
             
             return Ok(regionsDto);
         }
+
+        [HttpGet]
+        [Route("{id:guid}")]
+        [ActionName("GetRegion")]
+        public async Task<IActionResult> GetRegion(Guid id)
+        {
+            var region = await _regionRepository.GetRegionAsync(id);
+            
+            if(region == null)
+            {
+                return NotFound();
+            }
+
+            var regionDTO = mapper.Map<RegionsDTO>(region);
+
+            return Ok(regionDTO);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddRegion(AddRegionRequest addRegionRequest)
+        {
+            var region = new Region
+            {
+                Name = addRegionRequest.Name,
+                Population = addRegionRequest.Population,
+                Lat = addRegionRequest.Lat,
+                Long = addRegionRequest.Long,
+                Code = addRegionRequest.Code,
+                Area = addRegionRequest.Area
+            };
+
+            region = await _regionRepository.AddRegionAsync(region);
+
+            var regionDTO = mapper.Map<RegionsDTO>(region);
+
+            return CreatedAtAction(nameof(GetRegion), new { id = regionDTO.Id },regionDTO );
+
+        }
+        [HttpDelete]
+        [Route("{id:guid}")]
+        public async Task<IActionResult> DeleteRegion (Guid id)
+        {
+            var region = await _regionRepository.DeleteRegionAsync(id);
+            if(region == null) { return NotFound();}
+            var regionDTO = mapper.Map<RegionsDTO>(region);
+            return Ok(regionDTO);
+        }
+        [HttpPut]
+        [Route("{id:guid}")]
+        public async Task<IActionResult> UpdateRegion([FromRoute] Guid id, [FromBody] UpdateRegionRequest updateRegionRequest)
+        {
+            var region = new Region()
+            {
+                Code = updateRegionRequest.Code,
+                Name = updateRegionRequest.Name,
+                Population = updateRegionRequest.Population,
+                Lat = updateRegionRequest.Lat,
+                Long = updateRegionRequest.Long,
+                Area = updateRegionRequest.Area
+            };
+
+            region = await _regionRepository.UpdateRegionAsync(id, region);
+
+            if(region == null) { return NotFound();}
+
+            var regionDTO = mapper.Map<RegionsDTO>(region);
+
+            return Ok(regionDTO);
+        }
     }
 }
